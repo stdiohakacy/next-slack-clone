@@ -1,5 +1,7 @@
 bunx --bun shadcn@latest init
 bunx --bun shadcn@latest add button
+bunx --bun shadcn@latest add form
+bun i react-hook-form zod @hookform/resolvers
 
 admin@abcd
 
