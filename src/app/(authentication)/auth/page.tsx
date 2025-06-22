@@ -5,6 +5,8 @@ import { FcGoogle } from 'react-icons/fc';
 import { RxGithubLogo } from 'react-icons/rx';
 import { useForm } from 'react-hook-form';
 import { z } from 'zod';
+import { useState } from 'react';
+
 import Typography from '@/components/ui/typography';
 import { Button } from '@/components/ui/button';
 import {
@@ -16,8 +18,13 @@ import {
 } from '@/components/ui/form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { Input } from '@/components/ui/input';
+import { MdOutlineAutoAwesome } from 'react-icons/md';
+import { Provider } from '@supabase/supabase-js';
+import { supabaseBrowserClient } from '@/supabase/supabaseClient';
 
 const AuthPage = () => {
+    const [isAuthenticating, setIsAuthenticating] = useState(false)
+
   const formSchema = z.object({
     email: z.string().email().min(2, { message: 'Email must be 2 characters' }),
   });
@@ -28,6 +35,21 @@ const AuthPage = () => {
       email: '',
     },
   });
+
+  async function onSubmit(values: z.infer<typeof formSchema>) {
+    return
+  }
+
+  async function socialAuth(provider: Provider) {
+    setIsAuthenticating(true);
+    await supabaseBrowserClient.auth.signInWithOAuth({
+      provider,
+      options: {
+        redirectTo: `${location.origin}/auth/callback`,
+      },
+    });
+    setIsAuthenticating(false);
+  }
 
   return (
     <div className='min-h-screen p-5 grid text-center place-content-center bg-white'>
@@ -50,9 +72,10 @@ const AuthPage = () => {
         />
 
         <div className='flex flex-col space-y-4'>
-          <Button
+          <Button disabled={isAuthenticating}
             variant='outline'
             className='py-6 border-2 flex space-x-3'
+            onClick={() => socialAuth("google")}
           >
             <FcGoogle size={30} />
             <Typography
@@ -61,9 +84,10 @@ const AuthPage = () => {
               variant='p'
             />
           </Button>
-          <Button
+          <Button disabled={isAuthenticating}
             variant='outline'
             className='py-6 border-2 flex space-x-3'
+            onClick={() => socialAuth("github")}
           >
             <RxGithubLogo size={30} />
             <Typography
@@ -82,8 +106,8 @@ const AuthPage = () => {
           </div>
 
           <Form {...form}>
-            <form>
-              <fieldset>
+            <form onSubmit={form.handleSubmit(onSubmit)}>
+              <fieldset >
                 <FormField
                   control={form.control}
                   name='email'
@@ -104,6 +128,16 @@ const AuthPage = () => {
                 >
                   <Typography text='Sign in with Email' variant='p' />
                 </Button>
+
+                <div className='px-5 py-4 bg-gray-100 rounded-sm'>
+                  <div className='text-gray-500 flex items-center space-x-3'>
+                    <MdOutlineAutoAwesome />
+                    <Typography
+                      text='We will email you a magic link for a password-free sign-in'
+                      variant='p'
+                    />
+                  </div>
+                </div>
               </fieldset>
             </form>
           </Form>
